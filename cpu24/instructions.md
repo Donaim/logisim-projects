@@ -11,8 +11,8 @@
 00100:     C
 00101:     ~A               (bitwise negate)
 00110:     -A               (arithmetic negate)
-00111:     A++
-01000:     A == 0
+00111:     !A               (boolean negate)
+01000:     A++
 01001:     #A               (count bits in A)
 01010:     A + B
 01011:     A - B
@@ -47,5 +47,6 @@
   100:     A = MEM                   (load MEM to A)
   101:     MEM = CURR                (load CURR to MEM)
   110:     NEW_MEM_ADR = CURR
-  111:     A <- STEP;   B <-A;   C <- B;   NEXT_STEP = CURR         (jump to line with number CURR)
+  111:     if A == 0 then jump_to B
+
 
