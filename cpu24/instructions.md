@@ -1,6 +1,11 @@
 # SYMBOLS
 `CURR`: current output
 
+# STRUCTURE
+4 : INPUT
+4 : OUTPUT
+3 : NOT USED
+5 : OPERATOR INSTRUCTION
 
 # OPERATOR
 
@@ -38,15 +43,24 @@
 11111:     
 
 
-# MOD
+# INPUTS
+ 0000:    operator
+ 0001:    A
+ 0010:    B
+ 0011:    C
+ 0100:    step
+ 0101:    mem
+ 0110:    mem_adr
+ 0111:    k0
+ .....    kn
 
-  000:     HALT
-  001:     A = CURR
-  010:     B = CURR
-  011:     C = CURR
-  100:     A = MEM                   (load MEM to A)
-  101:     MEM = CURR                (load CURR to MEM)
-  110:     NEW_MEM_ADR = CURR
-  111:     if A == 0 then jump_to B
-
-
+# OUTPUTS
+ 0000:    calc
+ 0001:    new_a
+ 0010:    new_b
+ 0011:    new_c
+ 0100:    next_step
+ 0101:    new_mem
+ 0110:    new_mem_adr
+ 0111:    p0
+ .....    pn
