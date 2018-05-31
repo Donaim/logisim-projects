@@ -10,33 +10,89 @@ def bin_to_hex(bin: str) -> str:
 def is_code_line(line: str) -> bool:
     return len(line) > 0 and (not line.isspace())  and line[0] != '#'
 
+def pad_args(args: list):
+    for i in range(len(args), 3):
+        args.append('0')
+
+def isnumber(string: str):
+    try:
+        f = int(string)
+        return True
+    except:
+        return False
+
 def split_line(line: str):
-    sp = line.split()
-    if len(sp) != 3:
-        raise Exception('line "{}" does not split into 3 parts!'.format(line))
-    return (sp[0], sp[1], sp[2])
+    (line, _, _) = line.partition('#')
+    (out, _, com) = line.partition('=')
+    out = out.strip()
+
+    if len(com) == 0:
+        raise Exception('command in line "{}" cannot be empty!'.format(line))
+
+    csp = com.split()
+    op = csp[0]
+    if not op in operators: # if not operator, then maybe input
+        if isnumber(com):
+            return ((out, com), True)
+        else:
+            csp = ['x', op]
+            op = csp[0]
+    args = csp[1:]
+
+    need_args_count = translate_part(op, operators)[1]
+    curr_args_count = len(args)
+
+    if curr_args_count != need_args_count:
+        raise Exception("operation {} expects {} arguments but {} were given".format(op, need_args_count, curr_args_count))
+
+    pad_args(args)
+
+    return ((out, op, args[0], args[1], args[2]), False)
 
 def translate_part(p: str, di) -> str:
-    try:
-        re = di[p]
-        return re
-    except:
-        raise Exception('wrong instruction: "{}"'.format(p))
+    try: return di[p]
+    except: raise Exception('wrong instruction: "{}"'.format(p))
+
+def convert_decimal_to_binary(dec: str) -> str:
+    s =  bin( int(dec) )[2:]
+    if len(s) > 20: 
+        raise Exception('number {} is greater than 20 bits which is not supported'.format(dec))
+    zeros = "0" * (20 - len(s))
+    s = zeros + s
+    return s
+
+def get_literal_command_binary(vs: list) -> str:
+    (outp, num) = vs
+    
+    outp = translate_part(outp, output_adresses)
+    numb = convert_decimal_to_binary(num)
+
+    binary = outp + numb
+    print ("binary = {}".format(binary))
+    return binary
+
+def get_normal_command_binary(vs: list) -> str:
+    (outp, op, x, y, z) = vs
+
+    print ("splitted={}".format([outp, op, x, y, z]))
+
+    outp = translate_part(outp, output_adresses)
+    op   = translate_part(op, operators)[0]
+    x    = translate_part(x, input_adresses)
+    y    = translate_part(y, input_adresses)
+    z    = translate_part(z, input_adresses)
+    print ("binary splitted={}".format([x, y, z, outp, op]))
+
+    binary = outp + '100' + op + x + y + z
+    print ("binary = {}".format(binary))
+    return binary
 
 def translate_line(line: str) -> str:
     if not is_code_line(line): return None
 
-    (inp, op, outp) = split_line(line)
-    inp  = translate_part(inp, input_commands)
-    op   = translate_part(op, operator_commands)
-    outp = translate_part(outp, output_commands)
-
-    binary = inp + outp + '000' + op
-    print ("binary = {}".format(binary))
-    
+    (vs, is_liter) = split_line(line)
+    binary = get_literal_command_binary(vs) if is_liter else get_normal_command_binary(vs)
     he = bin_to_hex(binary)
-    print ('hex = {}'.format(he))
-
     return he
 
 def assemble_file(path: str) -> list:
@@ -53,11 +109,11 @@ def assemble_file(path: str) -> list:
     
     return lines
 
-def write_lines(path: str, lines: list):
+def write_lines(path: str, lines: list):    
     file = open(path, 'w+')
     file.write('v2.0 raw\n')
 
-    print("lines={}".format(lines))
+    print("\nlines={}".format(lines))
 
     i = 0
     while True:
@@ -74,6 +130,7 @@ def write_lines(path: str, lines: list):
         file.write('\n')
 
 if __name__ == "__main__":
+    print("")
     
     lines = assemble_file(sys.argv[1])
     write_lines("code2.tsv", lines)

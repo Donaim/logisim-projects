@@ -1,0 +1,21 @@
+
+# this code prints "HELLO"
+
+a = 10
+b = 5
+a = * a b    # TESTING
+
+r0 = 72
+r1 = T
+r0 = 69
+r1 = T
+r0 = 76
+r1 = T
+r0 = 76
+r1 = T
+r0 = 79
+r1 = T
+
+@ = 0
+
+
