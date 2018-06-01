@@ -1,0 +1,6 @@
+
+# just increment a in a loop
+
+a = ++ a
+@ = 0
+

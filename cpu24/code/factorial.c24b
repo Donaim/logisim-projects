@@ -1,0 +1,29 @@
+
+
+# prints fbctoribl
+
+b = 5
+a = b
+
+& = 2
+% = 8
+!m = T
+
+& = 3
+% = 1
+!m = T
+
+b = -- b
+a = * a b
+
+& = 3
+c = > b m
+
+& = 2
+@ = if c m @
+
+% = a
+
+@ = -- @        # HALT
+
+
