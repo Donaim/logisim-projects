@@ -36,6 +36,11 @@ def split_update_command(line: str, line0: str):
     if len(line) <= 1:
         raise Exception('update command ({}) should have index as argument!'.format(line0))
     return (line[1:], "update")
+def split_read_command(line: str, line0: str):
+    line = line.replace(' ', '').replace('\t', '')
+    if len(line) <= 1:
+        raise Exception('read command ({}) should have index as argument!'.format(line0))
+    return (line[1:], "read")
 
 def remove_comments(line: str):
     return line.partition('#')[0]
@@ -47,14 +52,15 @@ def split_line(line0: str):
     if len(line) == 0:
         raise Exception('empty code line: "{}"'.format(line0))
 
-    if line[0] == '!':
-        return split_update_command(line, line0)
-
     (out, _, com) = line.partition('=')
     out = out.strip()
     com = com.strip()
 
     if len(com) == 0:
+        if line[0] == '!':
+            return split_update_command(line, line0)
+        if line[0] == '$':
+            return split_read_command(line, line0)
         raise Exception('command in line "{}" cannot be empty!'.format(line0))
 
     csp = com.split()
@@ -99,6 +105,8 @@ def convert_char_to_decimal(ch: str) -> str:
         ch = '\n'
     elif ch == "\\t":
         ch = '\t'
+    elif ch == '\\b':
+        ch = '\b'
     return str(ord(ch))
 
 def get_literal_command_binary(vs: list) -> str:
@@ -134,6 +142,14 @@ def get_update_command_binary(vs: list) -> str:
 
     binary = outp + numb
     return binary
+def get_read_command_binary(vs: list) -> str:
+    index = vs
+
+    outp = translate_part('$', output_adresses)
+    numb = convert_decimal_to_binary(index)
+
+    binary = outp + numb
+    return binary
 
 def get_binary_from_line(vs: list, rtype) -> str:
     if rtype == 'expr':
@@ -142,6 +158,8 @@ def get_binary_from_line(vs: list, rtype) -> str:
         return get_literal_command_binary(vs)
     if rtype == 'update':
         return get_update_command_binary(vs)
+    if rtype == 'read':
+        return get_read_command_binary(vs)
     raise NotImplementedError('unknown rtype: {}'.format(rtype))
 def translate_line(line: str) -> str:
     if not is_code_line(line): return None
