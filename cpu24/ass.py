@@ -31,14 +31,31 @@ def ischar(string: str):
         return False
     return True
 
-def split_line(line: str):
-    (line, _, _) = line.partition('#')
+def split_update_command(line: str, line0: str):
+    line = line.replace(' ', '').replace('\t', '')
+    if len(line) <= 1:
+        raise Exception('update command ({}) should have index as argument!'.format(line0))
+    return (line[1:], "update")
+
+def remove_comments(line: str):
+    return line.partition('#')[0]
+
+def split_line(line0: str):
+    line = remove_comments(line0)
+    line = line.strip()
+
+    if len(line) == 0:
+        raise Exception('empty code line: "{}"'.format(line0))
+
+    if line[0] == '!':
+        return split_update_command(line, line0)
+
     (out, _, com) = line.partition('=')
     out = out.strip()
     com = com.strip()
 
     if len(com) == 0:
-        raise Exception('command in line "{}" cannot be empty!'.format(line))
+        raise Exception('command in line "{}" cannot be empty!'.format(line0))
 
     csp = com.split()
     csp = list(map (str.strip, csp))
@@ -71,8 +88,8 @@ def translate_part(p: str, di) -> str:
 
 def convert_decimal_to_binary(dec: str) -> str:
     s =  bin( int(dec) )[2:]
-    if len(s) > 20: 
-        raise Exception('number {} is greater than 20 bits which is not supported'.format(dec))
+    if len(s) > 19: 
+        raise Exception('number {} is greater than 19 bits which is not supported'.format(dec))
     zeros = "0" * (20 - len(s))
     s = zeros + s
     return s
@@ -109,11 +126,22 @@ def get_normal_command_binary(vs: list) -> str:
     binary = outp + '100' + op + x + y + z
     # print ("binary = {}".format(binary))
     return binary
+def get_update_command_binary(vs: list) -> str:
+    index = vs
+
+    outp = translate_part('!', output_adresses)
+    numb = convert_decimal_to_binary(index)
+
+    binary = outp + numb
+    return binary
+
 def get_binary_from_line(vs: list, rtype) -> str:
     if rtype == 'expr':
         return get_normal_command_binary(vs)
     if rtype == 'number':
         return get_literal_command_binary(vs)
+    if rtype == 'update':
+        return get_update_command_binary(vs)
     raise NotImplementedError('unknown rtype: {}'.format(rtype))
 def translate_line(line: str) -> str:
     if not is_code_line(line): return None
